@@ -11,6 +11,10 @@ import android.widget.Toast;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.facebook.accountkit.Account;
+import com.facebook.accountkit.AccountKit;
+import com.facebook.accountkit.AccountKitCallback;
+import com.facebook.accountkit.AccountKitError;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,6 +24,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+            @Override
+            public void onSuccess(Account account) {
+
+            }
+
+            @Override
+            public void onError(AccountKitError accountKitError) {
+                String toastMessage = accountKitError.getErrorType().getMessage();
+                Toast.makeText(MainActivity.this, toastMessage, Toast.LENGTH_LONG).show();
+            }
+        });
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
@@ -27,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                AccessToken accessToken=AccessToken.getCurrentAccessToken();
+                AccessToken accessToken=null;
 
                 GraphRequest request = GraphRequest.newGraphPathRequest(
                         accessToken,
