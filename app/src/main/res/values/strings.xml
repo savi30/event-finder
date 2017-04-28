@@ -5,4 +5,5 @@
     <string name="login_phone_label">Login with your phone number</string>
     <string name="login_email_label">Login with your email</string>
     <string name="ak_login_protocol_scheme">ak1512690835416766</string>
+    <string name="fb_login_protocol_scheme">fb1512690835416766</string>
 </resources>
