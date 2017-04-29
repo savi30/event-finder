@@ -28,7 +28,37 @@ public class MainActivity extends AppCompatActivity {
         if (AccessToken.getCurrentAccessToken() != null) {
             Profile currentProfile = Profile.getCurrentProfile();
             if (currentProfile != null) {
-                //
+                final AccessToken accessToken = AccessToken.getCurrentAccessToken();
+
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        GraphRequest request = GraphRequest.newGraphPathRequest(
+                                accessToken,
+                                "/search",
+                                new GraphRequest.Callback() {
+                                    @Override
+                                    public void onCompleted(GraphResponse response) {
+                                        Log.v(LOG_TAG,response.toString());
+                                    }
+                                });
+
+                        Bundle parameters = new Bundle();
+                        parameters.putString("q", "Roma");
+                        parameters.putString("type", "event");
+                        parameters.putString("limit", "2");
+                        parameters.putString("pretty", "0");
+                        request.setParameters(parameters);
+                        request.executeAsync();
+
+                        Toast.makeText(MainActivity.this,"Graph API queryed",Toast.LENGTH_LONG).show();
+
+                    }
+                });
+
             }
             else {
                 // Fetch the profile, which will trigger the onCurrentProfileChanged receiver
@@ -49,36 +79,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-////                GraphRequest request = GraphRequest.newGraphPathRequest(
-////                        accessToken,
-////                        "/search",
-////                        new GraphRequest.Callback() {
-////                            @Override
-////                            public void onCompleted(GraphResponse response) {
-////                                Log.e(LOG_TAG,response.toString());
-////                            }
-////                        });
-////
-////                Bundle parameters = new Bundle();
-////                parameters.putString("q", "Cluj");
-////                parameters.putString("type", "event");
-////                parameters.putString("limit", "1000");
-////                parameters.putString("pretty", "0");
-////                request.setParameters(parameters);
-////                request.executeAsync();
-////
-////                Toast.makeText(MainActivity.this,"Graph API queryed",Toast.LENGTH_SHORT).show();
-////
-////            }
-//      });
-//
-//
-//
+
+
+
     }
 }
