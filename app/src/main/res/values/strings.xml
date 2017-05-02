@@ -2,6 +2,7 @@
     <string name="app_name">Events</string>
     <string name="facebook_app_id">1512690835416766</string>
     <string name="ACCOUNT_KIT_CLIENT_TOKEN">ee5be114b3293f86c060fdc586c19892</string>
+    <string name="APP_CLIENT_TOKEN">2deb0205c88399d58fdac8141a0e6e70</string>
     <string name="login_phone_label">Login with your phone number</string>
     <string name="login_email_label">Login with your email</string>
     <string name="ak_login_protocol_scheme">ak1512690835416766</string>
