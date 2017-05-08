@@ -11,14 +11,14 @@ public class CustomEvent {
     private String mEventStartTime;
     private long mEventId;
 
-    public CustomEvent(String eventName,String placeName,String eventStartTime,long eventId)
-    {
+    public CustomEvent(String eventName,String placeName,String eventStartTime,long eventId) {
         mEventName=eventName;
         mPlaceName=placeName;
         mEventId=eventId;
         mEventStartTime=eventStartTime;
 
     }
+
 
     public String getEventName()
     {

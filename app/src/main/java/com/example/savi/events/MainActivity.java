@@ -1,34 +1,32 @@
 package com.example.savi.events;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.Profile;
-import com.facebook.accountkit.Account;
-import com.facebook.accountkit.AccountKit;
-import com.facebook.accountkit.AccountKitCallback;
-import com.facebook.accountkit.AccountKitError;
+import com.facebook.places.PlaceManager;
+import com.facebook.places.model.PlaceFields;
+import com.facebook.places.model.PlaceSearchRequestParams;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = MainActivity.class.getName();
+
+    private static final int MY_PERMISSIONS_REQUEST_LOCATION=1;
 
     private CustomEventAdapter mEventAdapter;
 
@@ -55,43 +53,15 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void onCompleted(GraphResponse response) {
 
-                                        ListView eventListView= (ListView) findViewById(R.id.list);
+                                        ListView eventListView = (ListView) findViewById(R.id.list);
 
-                                        List<CustomEvent> events = new ArrayList<CustomEvent>();
+                                        List<CustomEvent> events=Utils.parseJson(response);
 
-                                        JSONObject jsonObject = response.getJSONObject();
-
-                                        if(jsonObject!=null) {
-
-
-                                            try {
-                                                JSONArray data= jsonObject.getJSONArray("data");
-
-                                                for (int i=0;i<data.length();i++) {
-
-                                                    JSONObject currentEvent=data.getJSONObject(i);
-
-                                                    long eventID=currentEvent.getLong("id");
-                                                    String eventName=currentEvent.getString("name");
-                                                    String eventStartTime=currentEvent.getString("start_time");
-                                                    JSONObject place = currentEvent.getJSONObject("place");
-                                                    String placeName = place.getString("name");
-
-                                                    CustomEvent event = new CustomEvent(eventName,placeName,eventStartTime,eventID);
-
-                                                    events.add(event);
-
-                                                }
-
-                                            } catch (JSONException e) {
-                                                Log.e(MainActivity.class.getName(),e.toString());
-                                            }
-
-                                        }
-                                        if(!events.isEmpty()){
+                                        if (!events.isEmpty()) {
                                             fab.setVisibility(View.GONE);
                                         }
-                                        mEventAdapter=new CustomEventAdapter(MainActivity.this,events);
+
+                                        mEventAdapter = new CustomEventAdapter(MainActivity.this, events);
                                         eventListView.setAdapter(mEventAdapter);
 
                                     }
@@ -109,28 +79,88 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-            }
-            else {
+            } else {
                 Profile.fetchProfileForCurrentAccessToken();
             }
-        }
-        else {
-            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+        } else {
+
+            //TODO Refractor code for PlacesGraph
+            final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
+            fab.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onSuccess(Account account) {
+                public void onClick(View v) {
 
                     FacebookSdk.setClientToken(String.valueOf(R.string.APP_CLIENT_TOKEN));
 
+                    PlaceSearchRequestParams.Builder builder = new
+                            PlaceSearchRequestParams.Builder();
 
-                }
+                    builder.setSearchText("Caffe");
+                    builder.setDistance(10000);
+                    builder.setLimit(100);
+                    builder.addField(PlaceFields.NAME);
+                    builder.addField(PlaceFields.LOCATION);
+                    builder.addField(PlaceFields.PHONE);
 
-                @Override
-                public void onError(AccountKitError accountKitError) {
-                    String toastMessage = accountKitError.getErrorType().getMessage();
-                    Toast.makeText(MainActivity.this, toastMessage, Toast.LENGTH_LONG).show();
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                            //Show description
+                        } else {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
+                        }
+
+                    }
+
+
+                    MainActivity.PlaceSearchRequestCallback callback = new MainActivity.PlaceSearchRequestCallback();
+
+                    PlaceManager.newPlaceSearchRequest(builder.build(), callback);
+
                 }
             });
         }
+    }
 
+    public class PlaceSearchRequestCallback implements PlaceManager.OnRequestReadyCallback , GraphRequest.Callback {
+
+        @Override
+        public void onCompleted(GraphResponse response) {
+
+            Log.v(LOG_TAG,response.toString());
+
+        }
+
+        @Override
+        public void onLocationError(PlaceManager.LocationError error) {
+
+            Log.e(LOG_TAG,"LocationError "+error);
+
+        }
+
+        @Override
+        public void onRequestReady(GraphRequest graphRequest) {
+
+            graphRequest.setCallback(this);
+            graphRequest.executeAsync();
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode){
+            case MY_PERMISSIONS_REQUEST_LOCATION:
+                if(grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED)
+                {
+
+                    return;
+
+                }else {
+                    //Permission denied
+                }
+                return;
+        }
     }
 }

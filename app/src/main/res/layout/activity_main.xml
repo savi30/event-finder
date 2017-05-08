@@ -18,6 +18,7 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
         android:src="@drawable/magnifier"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
